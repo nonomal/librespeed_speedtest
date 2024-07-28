@@ -41,7 +41,7 @@ jobs:
       - name: Fetch DB from ipinfo.io
         run: |
           if [ -z "${{ secrets.IPINFO_APIKEY }}" ]; then
-            echo "Warning: API_KEY is not defined."
+            echo "Warning: IPINFO_APIKEY is not defined."
           else
             curl -L https://ipinfo.io/data/free/country_asn.mmdb?token=${{ secrets.IPINFO_APIKEY }} -o backend/country_asn.mmdb
           fi
