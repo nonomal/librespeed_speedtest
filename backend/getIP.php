@@ -91,7 +91,11 @@ function getIpInfoTokenString()
  */
 function getIspInfo($ip)
 {
-    $json = file_get_contents('https://ipinfo.io/' . $ip . '/json' . getIpInfoTokenString());
+    $token=getIpInfoTokenString();
+    if (empty($token)){
+        return null;
+    }
+    $json = file_get_contents('https://ipinfo.io/' . $ip . '/json' . $token);
     if (!is_string($json)) {
         return null;
     }
@@ -334,6 +338,23 @@ function calculateDistance($clientLocation, $serverLocation, $unit)
     return null;
 }
 
+require_once("geoip2.phar");
+use MaxMind\Db\Reader;
+/**
+ * @param string $ip
+ *
+ * @return string
+ */
+function getIspInfo_offlineDb($ip){
+    $reader = new Reader('country_asn.mmdb');
+    $record = $reader->get($ip);
+    if(is_null($record)){
+        return "{}";
+    }else{
+        return $record;
+    }
+}
+
 /**
  * @return void
  */
@@ -387,6 +408,29 @@ function sendResponse(
     ]);
 }
 
+/**
+ * @param string $ip
+ * @param array|null $rawIspInfo
+ *
+ * @return void
+ */
+function sendResponse_offlineDb(
+    $ip,
+    $rawIspInfo = null
+) {
+    $processedString = $ip;
+    if(is_array($rawIspInfo)){
+        $processedString .= ' - ' . $rawIspInfo['as_name'] . ', ' . $rawIspInfo['country_name'];
+    }else{
+        $processedString .= ' - Unknown ISP';
+    }
+    sendHeaders();
+    echo json_encode([
+        'processedString' => $processedString,
+        'rawIspInfo' => $rawIspInfo ?: '',
+    ]);
+}
+
 $ip = getClientIp();
 
 $localIpInfo = getLocalOrPrivateIpInfo($ip);
@@ -402,7 +446,11 @@ if (!isset($_GET['isp'])) {
 }
 
 $rawIspInfo = getIspInfo($ip);
-$isp = getIsp($rawIspInfo);
-$distance = getDistance($rawIspInfo);
-
-sendResponse($ip, $isp, $distance, $rawIspInfo);
+if (is_null($rawIspInfo)){
+    $rawIspInfo = getIspInfo_offlineDb($ip);
+    sendResponse_offlineDb($ip,$rawIspInfo);
+}else{
+    $isp = getIsp($rawIspInfo);
+    $distance = getDistance($rawIspInfo);
+    sendResponse($ip, $isp, $distance, $rawIspInfo);
+}

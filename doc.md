@@ -1,7 +1,7 @@
 # LibreSpeed
 
 > by Federico Dossena
-> Version 5.2.4
+> Version 5.4
 > [https://github.com/librespeed/speedtest/](https://github.com/librespeed/speedtest/)
 
 ## Introduction
@@ -57,9 +57,8 @@ Put all files on your web server via FTP or by copying them directly. You can in
 __Important:__ The speed test needs write permissions in the installation folder!
 
 #### ipinfo.io
-The speed test uses [ipinfo.io](https://ipinfo.io) to detect ISP and distance from server. This is completely optional and can be disabled if you want (see speed test settings), but it is enabled by default, and if you expect more than ~500 tests per day, you will need to sign up to [ipinfo.io](https://ipinfo.io) and edit `backend/getIP_ipInfo_apikey.php` to set your access token.
-
-IpInfo.io has kindly offered free access to their APIs for users of this project; if you're interested, contact me at [info@fdossena.com](mailto:info@fdossena.com) and provide a description of what you intend to do with the project, and you'll get the API key.
+The speed test uses the [ipinfo.io](https://ipinfo.io) offline database to detect ISP and country (CC-BY-SA 4.0 license), enabled by default.
+It's possible to use the full [ipinfo.io](https://ipinfo.io) API to detect distance from server as well. This is completely optional and can be enabled by obtaining an [access token](https://ipinfo.io) and putting it in `backend/getIP_ipInfo_apikey.php`. When this feature is enabled, the offline database will only be used as fallback.
 
 #### Telemetry and results sharing
 The test supports storing test results and can generate shareable images that users can embed in forum signatures and such.
@@ -361,7 +360,7 @@ __Main parameters:__
     * __Important:__ On Firefox, it is better to run the upload test last
 * __getIp_ispInfo__: if true, the server will try to get ISP info and pass it along with the IP address. This will add `isp=true` to the request to `url_getIp`. getIP.php accomplishes this using ipinfo.io
     * Default: `true`
-* __getIp_ispInfo_distance__: if true, the server will try to get an estimate of the distance from the client to the speed test server. This will add a `distance` argument to the request to `url_getIp`. `__getIp_ispInfo__` must be enabled in order for this to work. getIP.php accomplishes this using ipinfo.io
+* __getIp_ispInfo_distance__: if true, the server will try to get an estimate of the distance from the client to the speed test server. This will add a `distance` argument to the request to `url_getIp`. `__getIp_ispInfo__` must be enabled in order for this to work. getIP.php accomplishes this using ipinfo.io (API key required)
     * `km`: estimate distance in kilometers
     * `mi`: estimate distance in miles
     * not set: do not measure distance
