@@ -348,11 +348,7 @@ use MaxMind\Db\Reader;
 function getIspInfo_offlineDb($ip){
     $reader = new Reader('country_asn.mmdb');
     $record = $reader->get($ip);
-    if(is_null($record)){
-        return "{}";
-    }else{
-        return $record;
-    }
+    return $record;
 }
 
 /**
