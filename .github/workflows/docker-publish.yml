@@ -39,6 +39,7 @@ jobs:
 
       # Fetch the ipinfo database file using curl if API key is defined
       - name: Fetch DB from ipinfo.io
+        # IPINFO_APIKEY is set in https://github.com/librespeed/speedtest/settings/secrets/actions
         run: |
           if [ -z "${{ secrets.IPINFO_APIKEY }}" ]; then
             echo "Warning: IPINFO_APIKEY is not defined."
