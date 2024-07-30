@@ -108,11 +108,11 @@ A basic front-end for visualizing and searching tests by ID is available in `res
 A login is required to access the interface. __Important__: change the default password in `results/telemetry_settings.php`.
 
 #### The end
-Now that the test is installed, the default page uses telemetry and results sharing. If you want another index page, rename one of the examples to `index.html` and delete the other examples. The best starting point for most people is `example-singleServer-gauges.html`.
+Now that the test is installed, the default page uses telemetry and results sharing. If you want another UI, you can easily customize `index.html` or one of the examples in the `examples` folder (the best starting point for most people is `example-singleServer-gauges.html`).
 
 If you're not using telemetry and results sharing, you can delete the `results` folder too.
 
-Details about the examples and how to make custom UIs will be discussed later. If you don't want to make a custom UI, feel free to modify the example and replace "LibreSpeed Example" with the name of your test.
+Details about the examples and how to make custom UIs will be discussed later.
 
 #### Privacy
 Telemetry contains personal information (according to GDPR definition), therefore it is important to treat this data respectfully of national and international laws, especially if you plan to offer the service in the European Union.
@@ -145,30 +145,30 @@ To install the speed test frontend, copy the following files to your web server:
 * `speedtest.js`
 * `speedtest_worker.js`
 * Optionally, the `results` folder
-* One of the `multipleServers` examples (the best starting points are `example-multipleServers-pretty.html` if you don't want to use telemetry and results sharing, `example-multipleServers-full.html` if you want to use them). Rename the example you choose to `index.html`
+* `index.html` (or one of the example UIs in the `examples` folder)
 
 __Important:__ The speed test needs write permissions in the installation folder!
 
 ##### Server list
-Edit `index.html`, you will see a list of servers:
+Edit `index.html` and uncomment the list of servers:
 ```js
 var SPEEDTEST_SERVERS=[
-	{
-		"name":"Speed test Demo Server 1", //user friendly name for the server
-		"server":"//mpotdemo.fdossena.com/", //URL to the server. // at the beginning will be replaced with http:// or https:// automatically
-		"dlURL":"garbage.php",  //path to download test on this server (garbage.php or replacement)
-		"ulURL":"empty.php",  //path to upload test on this server (empty.php or replacement)
-		"pingURL":"empty.php",  //path to ping/jitter test on this server (empty.php or replacement)
-		"getIpURL":"getIP.php"  //path to getIP on this server (getIP.php or replacement)
+	/*{
+		name:"Example Server 1", //user friendly name for the server
+		server:"//test1.mydomain.com/", //URL to the server. // at the beginning will be replaced with http:// or https:// automatically
+		dlURL:"backend/garbage.php",  //path to download test on this server (garbage.php or replacement)
+		ulURL:"backend/empty.php",  //path to upload test on this server (empty.php or replacement)
+		pingURL:"backend/empty.php",  //path to ping/jitter test on this server (empty.php or replacement)
+		getIpURL:"backend/getIP.php"  //path to getIP on this server (getIP.php or replacement)
 	},
 	{
-		"name":"Speed test Demo Server 2",
-		"server":"//mpotdemo2.fdossena.com/",
-		"dlURL":"garbage.php",
-		"ulURL":"empty.php",
-		"pingURL":"empty.php",
-		"getIpURL":"getIP.php"
-	}
+		name:"Example Server 2", //user friendly name for the server
+		server:"//test2.example.com/", //URL to the server. // at the beginning will be replaced with http:// or https:// automatically
+		dlURL:"garbage.php",  //path to download test on this server (garbage.php or replacement)
+		ulURL:"empty.php",  //path to upload test on this server (empty.php or replacement)
+		pingURL:"empty.php",  //path to ping/jitter test on this server (empty.php or replacement)
+		getIpURL:"getIP.php"  //path to getIP on this server (getIP.php or replacement)
+	}*/
 	//add other servers here, comma separated
 ];
 ```
@@ -185,11 +185,9 @@ None of these parameters can be omitted.
 
 __Important__: You can't mix HTTP with HTTPS; if the frontend uses HTTP, you won't be able to connect to HTTPS backends, and viceversa.
 
-__Important__: For HTTPS, all your servers must have valid certificates or the browser will refuse to connect
+__Important__: For HTTPS, all your servers must have valid certificates or the browser will refuse to connect.
 
-__Important__: Don't use my demo servers, they're slow!
-
-If your list of servers changes often, you might not want to have it hardcoded in the HTML file. LibreSpeed can load the server list from a JSON file. To do this, edit `index.html` and replace the list of servers with this:
+If your list of servers changes often, you might not want to have it hardcoded in the HTML file. LibreSpeed can load the server list from a JSON file. To do this, remove the server list and replace it with the URL to your server list, like this:
 ```js
 var SPEEDTEST_SERVERS="your URL here";
 ```
@@ -238,7 +236,7 @@ __Single server:__
 * `example-singleServer-customSettings.html`: Same as `example-singleServer-pretty.html` but configures the test so that it only performs download and upload tests, and with a fixed length instead of automatic
 * `example-singleServer-gauges.html`: The most sophisticated example, with the same functionality as `example-singleServer-pretty.html` but adds gauges. This is also a good starting point, but the gauges may slow down underpowered devices
 * `example-singleServer-chart.html`: Shows how to use the test with the Chart.js library
-* default `index.html`: The most complete example. Based on `example-singleServer-gauges.html`, also enables telemetry and results sharing
+* default `index.html`: A full UI that supports both single server and multiple servers installations and even has a dark theme
 
 __Multiple servers:__
 * `example-multipleServers-pretty.html`: Same as `example-singleServer-pretty.html` but with multiple test points. Server selection is fully automatic
