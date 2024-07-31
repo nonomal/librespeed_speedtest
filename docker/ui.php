@@ -10,7 +10,7 @@ function I(i){return document.getElementById(i);}
 
 //LIST OF TEST SERVERS. See documentation for details if needed
 <?php 
-$mode=getenv("MODE")
+$mode=getenv("MODE");
 if($mode=="standalone" || $mode=="dual"){ ?>
 var SPEEDTEST_SERVERS=[];
 <?php } else { ?>
