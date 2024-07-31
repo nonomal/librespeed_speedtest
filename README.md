@@ -33,14 +33,11 @@ Works with mobile versions too.
 * A fast! internet connection
 
 ## Installation
-Assuming you have PHP installed, the installation steps are quite simple.
-I set this up on a QNAP.
-For this example, I am using a folder called **speedtest** in my web share area.
+Assuming you have PHP and a web server installed, the installation steps are quite simple.
 
-1. Choose one of the example-xxx.html files in `examples` folder as your index.html if the default index.html does not fit.
-2. Add: speedtest.js, speedtest_worker.js, and favicon.ico to your speedtest folder.
-3. Download all of the backend folder into speedtest/backend.
-4. Download all of the results folder into speedtest/results.
+1. Download the source code and extract it
+2. Copy the following files to your web server's shared folder (ie. /var/www/html/speedtest for Apache): index.html, speedtest.js, speedtest_worker.js, favicon.ico and the backend folder
+4. Optionally, copy the results folder too, and set up the database using the config file in it.
 5. Be sure your permissions allow execute (755).
 6. Visit YOURSITE/speedtest/index.html and voila!
 
@@ -71,7 +68,7 @@ A partial Node.js implementation is available in the `node` branch, developed by
 [Donate with PayPal](https://www.paypal.me/sineisochronic)
 
 ## License
-Copyright (C) 2016-2022 Federico Dossena
+Copyright (C) 2016-2024 Federico Dossena
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by

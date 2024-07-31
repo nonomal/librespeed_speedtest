@@ -49,9 +49,9 @@ Here's a list of additional environment variables available in this mode:
 * __`REDACT_IP_ADDRESSES`__: When set to true with telemetry enabled, IP addresses and hostnames are redacted from the collected telemetry, for better privacy. Default value: `false`
 * __`PASSWORD`__: Password to access the stats page. If not set, stats page will not allow accesses.
 * __`EMAIL`__: Email address for GDPR requests. Must be specified when telemetry is enabled.
-* __`IPINFO_APIKEY`__: API key for ipinfo.io. Optional, but required if you expect to serve a large number of tests
-* __`DISABLE_IPINFO`__: If set to true, ISP info and distance will not be fetched from ipinfo.io. Default: value: `false`
-* __`DISTANCE`__: When `DISABLE_IPINFO` is set to false, this specifies how the distance from the server is measured. Can be either `km` for kilometers, `mi` for miles, or an empty string to disable distance measurement. Default value: `km`
+* __`DISABLE_IPINFO`__: If set to true, ISP info and distance will not be fetched from either ipinfo.io or the offline database. Default: value: `false`
+* __`IPINFO_APIKEY`__: API key for ipinfo.io. Optional, but required if you want to use the full ipinfo.io APIs (required for distance measurement)
+* __`DISTANCE`__: When `DISABLE_IPINFO` is set to false, this specifies how the distance from the server is measured. Can be either `km` for kilometers, `mi` for miles, or an empty string to disable distance measurement. Requires an ipinfo.io API key Default value: `km`
 * __`WEBPORT`__: Allows choosing a custom port for the included web server. Default value: `80`. Note that you will have to expose it through docker with the -p argument
 
 If telemetry is enabled, a stats page will be available at `http://your.server/results/stats.php`, but a password must be specified.
@@ -85,7 +85,7 @@ In backend mode, LibreSpeed provides only a test point with no UI. To do this, s
 The following backend files can be accessed on port 80: `garbage.php`, `empty.php`, `getIP.php`
 
 Here's a list of additional environment variables available in this mode:
-* __`IPINFO_APIKEY`__: API key for ipinfo.io. Optional, but required if you expect to serve a large number of tests
+* __`IPINFO_APIKEY`__: API key for ipinfo.io. Optional, but required if you want to use the full ipinfo.io APIs (required for distance measurement). If no API key is provided, the offline database will be used instead.
 
 ###### Example:
 This command starts LibreSpeed in backend mode, with the default settings, on port 80:
@@ -130,8 +130,8 @@ Here's a list of additional environment variables available in this mode:
 * __`REDACT_IP_ADDRESSES`__: When set to true with telemetry enabled, IP addresses and hostnames are redacted from the collected telemetry, for better privacy. Default value: `false`
 * __`PASSWORD`__: Password to access the stats page. If not set, stats page will not allow accesses.
 * __`EMAIL`__: Email address for GDPR requests. Must be specified when telemetry is enabled.
-* __`DISABLE_IPINFO`__: If set to true, ISP info and distance will not be fetched from ipinfo.io. Default: value: `false`
-* __`DISTANCE`__: When `DISABLE_IPINFO` is set to false, this specifies how the distance from the server is measured. Can be either `km` for kilometers, `mi` for miles, or an empty string to disable distance measurement. Default value: `km`
+* __`DISABLE_IPINFO`__: If set to true, ISP info and distance will not be fetched from the backend server. Default: value: `false`
+* __`DISTANCE`__: When `DISABLE_IPINFO` is set to false, this specifies how the distance from the server is measured. Can be either `km` for kilometers, `mi` for miles, or an empty string to disable distance measurement. Requires an ipinfo.io API Key on the backend server. Default value: `km`
 * __`WEBPORT`__: Allows choosing a custom port for the included web server. Default value: `80`
 
 ###### Example

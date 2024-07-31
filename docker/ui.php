@@ -9,7 +9,9 @@
 function I(i){return document.getElementById(i);}
 
 //LIST OF TEST SERVERS. See documentation for details if needed
-<?php if(getenv("MODE")=="standalone"){ ?>
+<?php 
+$mode=getenv("MODE")
+if($mode=="standalone" || $mode=="dual"){ ?>
 var SPEEDTEST_SERVERS=[];
 <?php } else { ?>
 var SPEEDTEST_SERVERS= <?= file_get_contents('/servers.json') ?: '[]' ?>;
