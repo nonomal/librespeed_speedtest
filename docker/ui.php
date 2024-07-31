@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no" />
-<link rel="apple-touch-icon" href="favicon.ico">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta charset="UTF-8" />
 <link rel="shortcut icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no" />
+<meta charset="UTF-8" />
 <script type="text/javascript" src="speedtest.js"></script>
 <script type="text/javascript">
 function I(i){return document.getElementById(i);}
+
+//LIST OF TEST SERVERS. See documentation for details if needed
+<?php if(getenv("MODE")=="standalone"){ ?>
+var SPEEDTEST_SERVERS=[];
+<?php } else { ?>
+var SPEEDTEST_SERVERS= <?= file_get_contents('/servers.json') ?: '[]' ?>;
+<?php } ?>
+
 //INITIALIZE SPEED TEST
 var s=new Speedtest(); //create speed test object
 <?php if(getenv("TELEMETRY")=="true"){ ?>
@@ -20,6 +26,57 @@ s.setParameter("getIp_ispInfo",false);
 <?php if(getenv("DISTANCE")){ ?>
 s.setParameter("getIp_ispInfo_distance","<?=getenv("DISTANCE") ?>");
 <?php } ?>
+
+//SERVER AUTO SELECTION
+function initServers(){
+	if(SPEEDTEST_SERVERS.length==0){ //standalone installation
+		//just make the UI visible
+		I("loading").className="hidden";
+		I("serverArea").style.display="none";
+		I("testWrapper").className="visible";
+		initUI();
+	}else{ //multiple servers
+		var noServersAvailable=function(){
+			I("message").innerHTML="No servers available";
+		}
+		var runServerSelect=function(){
+			s.selectServer(function(server){
+				if(server!=null){ //at least 1 server is available
+					I("loading").className="hidden"; //hide loading message
+					//populate server list for manual selection
+					for(var i=0;i<SPEEDTEST_SERVERS.length;i++){
+						if(SPEEDTEST_SERVERS[i].pingT==-1) continue;
+						var option=document.createElement("option");
+						option.value=i;
+						option.textContent=SPEEDTEST_SERVERS[i].name;
+						if(SPEEDTEST_SERVERS[i]===server) option.selected=true;
+						I("server").appendChild(option);
+					}
+					//show test UI
+					I("testWrapper").className="visible";
+					initUI();
+				}else{ //no servers are available, the test cannot proceed
+					noServersAvailable();
+				}
+			});
+		}
+		if(typeof SPEEDTEST_SERVERS === "string"){
+			//need to fetch list of servers from specified URL
+			s.loadServerList(SPEEDTEST_SERVERS,function(servers){
+				if(servers==null){ //failed to load server list
+					noServersAvailable();
+				}else{ //server list loaded
+					SPEEDTEST_SERVERS=servers;
+					runServerSelect();
+				}
+			});
+		}else{
+			//hardcoded server list
+			s.addTestPoints(SPEEDTEST_SERVERS);
+			runServerSelect();
+		}
+	}
+}
 
 var meterBk=/Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent)?"#EAEAEA":"#80808040";
 var dlColor="#6060AA",
@@ -71,16 +128,19 @@ function startStop(){
 		s.abort();
 		data=null;
 		I("startStopBtn").className="";
+		I("server").disabled=false;
 		initUI();
 	}else{
 		//test is not running, begin
 		I("startStopBtn").className="running";
 		I("shareArea").style.display="none";
+		I("server").disabled=true;
 		s.onupdate=function(data){
             uiData=data;
 		};
 		s.onend=function(aborted){
             I("startStopBtn").className="";
+            I("server").disabled=false;
             updateUI(true);
             if(!aborted){
                 //if testId is present, show sharing panel, otherwise do nothing
@@ -146,6 +206,25 @@ function initUI(){
 	h1{
 		color:#404040;
 	}
+	#loading{
+		background-color:#FFFFFF;
+		color:#404040;
+		text-align:center;
+	}
+	span.loadCircle{
+		display:inline-block;
+		width:2em;
+		height:2em;
+		vertical-align:middle;
+		background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAP1BMVEUAAAB2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZyFzwnAAAAFHRSTlMAEvRFvX406baecwbf0casimhSHyiwmqgAAADpSURBVHja7dbJbQMxAENRahnN5lkc//5rDRAkDeRgHszXgACJoKiIiIiIiIiIiIiIiIiIiIj4HHspsrpAVhdVVguzrA4OWc10WcEqpwKbnBo0OU1Q5NSpsoJFTgOecrrdEag85DRgktNqfoEdTjnd7hrEHMEJvmRUYJbTYk5Agy6nau6Abp5Cm7mDBtRdPi9gyKdU7w4p1fsLvyqs8hl4z9/w3n/Hmr9WoQ65lAU4d7lMYOz//QboRR5jBZibLMZdAR6O/Vfa1PlxNr3XdS3HzK/HVPRu/KnLs8iAOh993VpRRERERMT/fAN60wwWaVyWwAAAAABJRU5ErkJggg==');
+		background-size:2em 2em;
+		margin-right:0.5em;
+		animation: spin 0.6s linear infinite;
+	}
+	@keyframes spin{
+		0%{transform:rotate(0deg);}
+		100%{transform:rotate(359deg);}
+	}
 	#startStopBtn{
 		display:inline-block;
 		margin:0 auto;
@@ -173,6 +252,13 @@ function initUI(){
 	}
 	#startStopBtn.running:before{
 		content:"Abort";
+	}
+	#serverArea{
+		margin-top:1em;
+	}
+	#server{
+		font-size:1em;
+		padding:0.2em;
 	}
 	#test{
 		margin-top:2em;
@@ -268,26 +354,83 @@ function initUI(){
         text-align:center;
         font-size:0.8em;
         color:#808080;
-        display:block;
+        padding: 0 3em;
 	}
+    div.closePrivacyPolicy {
+        width: 100%;
+        text-align: center;
+    }
+    div.closePrivacyPolicy a.privacy {
+        padding: 1em 3em;
+    }
 	@media all and (max-width:40em){
 		body{
 			font-size:0.8em;
 		}
 	}
+	div.visible{
+		animation: fadeIn 0.4s;
+		display:block;
+	}
+	div.hidden{
+		animation: fadeOut 0.4s;
+		display:none;
+	}
+	@keyframes fadeIn{
+		0%{
+			opacity:0;
+		}
+		100%{
+			opacity:1;
+		}
+	}
+	@keyframes fadeOut{
+		0%{
+			display:block;
+			opacity:1;
+		}
+		100%{
+			display:block;
+			opacity:0;
+		}
+	}
+	@media all and (prefers-color-scheme: dark){
+		html,body,#loading{
+			background:#202020;
+			color:#F4F4F4;
+		}
+		h1{
+			color:#E0E0E0;
+		}
+		a{
+			color:#9090FF;
+		}
+		#privacyPolicy{
+			background:#000000;
+		}
+		#resultsImg{
+			filter: invert(1);
+		}
+	}
 </style>
-<title><?= getenv('TITLE') ?: 'LibreSpeed Example' ?></title>
+<title><?= getenv('TITLE') ?: 'LibreSpeed' ?></title>
 </head>
-<body>
-<h1><?= getenv('TITLE') ?: 'LibreSpeed Example' ?></h1>
-<div id="testWrapper">
+<body onload="initServers()">
+<h1><?= getenv('TITLE') ?: 'LibreSpeed' ?></h1>
+<div id="loading" class="visible">
+	<p id="message"><span class="loadCircle"></span>Selecting a server...</p>
+</div>
+<div id="testWrapper" class="hidden">
 	<div id="startStopBtn" onclick="startStop()"></div><br/>
 	<?php if(getenv("TELEMETRY")=="true"){ ?>
-        <a class="privacy" href="#" onclick="I('privacyPolicy').style.display=''">Privacy</a>
+		<a class="privacy" href="#" onclick="I('privacyPolicy').style.display=''">Privacy</a>
 	<?php } ?>
+	<div id="serverArea">
+		Server: <select id="server" onchange="s.setSelectedServer(SPEEDTEST_SERVERS[this.value])"></select>
+	</div>
 	<div id="test">
 		<div class="testGroup">
-			<div class="testArea2">
+            <div class="testArea2">
 				<div class="testName">Ping</div>
 				<div id="pingText" class="meterText" style="color:#AA6060"></div>
 				<div class="unit">ms</div>
@@ -360,8 +503,10 @@ function initUI(){
         Contact this email address for all deletion requests: <a href="mailto:<?=getenv("EMAIL") ?>"><?=getenv("EMAIL") ?></a>.
     </p>
     <br/><br/>
-    <a class="privacy" href="#" onclick="I('privacyPolicy').style.display='none'">Close</a><br/>
+    <div class="closePrivacyPolicy">
+        <a class="privacy" href="#" onclick="I('privacyPolicy').style.display='none'">Close</a>
+    </div>
+    <br/>
 </div>
-<script type="text/javascript">setTimeout(function(){initUI()},100);</script>
 </body>
 </html>
