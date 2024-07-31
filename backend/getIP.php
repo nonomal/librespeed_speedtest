@@ -10,6 +10,7 @@ error_reporting(0);
 
 define('API_KEY_FILE', 'getIP_ipInfo_apikey.php');
 define('SERVER_LOCATION_CACHE_FILE', 'getIP_serverLocation.php');
+define('OFFLINE_IPINFO_DB_FILE', 'country_asn.mmdb');
 
 require_once 'getIP_util.php';
 
@@ -136,7 +137,10 @@ function getIspInfo_ipinfoApi($ip){
 require_once("geoip2.phar");
 use MaxMind\Db\Reader;
 function getIspInfo_ipinfoOfflineDb($ip){
-    $reader = new Reader('country_asn.mmdb');
+    if (!file_exists(OFFLINE_IPINFO_DB_FILE) || !is_readable(OFFLINE_IPINFO_DB_FILE)){
+        return null;
+    }
+    $reader = new Reader(OFFLINE_IPINFO_DB_FILE);
     $data = $reader->get($ip);
     if(!is_array($data)){
         return null;
@@ -184,7 +188,7 @@ if(isset($_GET['isp'])){
             if(!is_null($r)){
                 echo $r;
             }else{
-                echo getIspInfo_fallback($ip);
+                echo formatResponse_simple($ip);
             }
         }
     }
