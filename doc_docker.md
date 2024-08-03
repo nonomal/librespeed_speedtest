@@ -8,7 +8,7 @@ To download LibreSpeed from the docker repo, use this command:
 docker pull ghcr.io/librespeed/speedtest
 ```
 
-You will now have a new docker image called `librespeed/speedtest`.
+You will now have a new docker image called `ghcr.io/librespeed/speedtest`.
 
 ## Docker Compose
 
