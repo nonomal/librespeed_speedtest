@@ -53,8 +53,10 @@ Server side, you'll need:
   * MySQL/MariaDB and its PHP PDO module
   * PostgreSQL and its PHP PDO module
   * SQLite 3 and its PHP PDO module
-* If you want to enable results sharing:
-  * FreeType 2 and its PHP module (this is usually installed automatically by most distros)
+  * MSSQL and its PHP PDO module (Windows only)
+* If you want to enable results sharing (these are usually installed automatically by most distros when you install PHP):
+  * FreeType 2 and its PHP module
+  * The PHP gd library
 
 Let's install the speed test.
 
@@ -75,13 +77,13 @@ To use this function, you will need a database. The test supports MySQL, Postgre
 
 ##### Creating the database
 
-This step is only required for MySQL and PostgreSQL. If you want to use SQLite, skip to the next step.
+This step is only required for MySQL, PostgreSQL and MSSQL. If you want to use SQLite, skip to the next step.
 
-Log into your database using phpMyAdmin or a similar software and create a new database. Inside the `results` folder you will find `telemetry_mysql.sql` and `telemetry_postgresql.sql`, which are templates for MySQL and PostgreSQL respectively. Import the one you need, and you will see a `speedtest_users` table in the database. You can delete the templates afterwards.
+Log into your database using phpMyAdmin or a similar software and create a new database. Inside the `results` folder you will find `telemetry_mysql.sql`, `telemetry_postgresql.sql` and `telemetry_mssql.sql`, which are templates for MySQL and PostgreSQL respectively. Import the one you need, and you will see a `speedtest_users` table in the database. You can delete the templates afterwards.
 
 ##### Configuring telemetry
 
-Open `results/telemetry_settings.php` in a text editor. Set `$db_type` to either `mysql`,`postgresql` or `sqlite`.
+Open `results/telemetry_settings.php` in a text editor. Set `$db_type` to either `mysql`,`postgresql`, `mssql` or `sqlite`.
 
 If you chose to use SQLite, you might want to change `$Sqlite_db_file` to another path where you want the database to be stored. Just make sure that the file cannot be downloaded by users. Sqlite doesn't require any additional configuration, you can skip the rest of this section.
 
@@ -101,6 +103,17 @@ $PostgreSql_username="USERNAME"; //your database username
 $PostgreSql_password="PASSWORD"; //your database password
 $PostgreSql_hostname="DB_HOSTNAME"; //database address, usually localhost
 $PostgreSql_databasename="DB_NAME"; //the name of the database where you loaded telemetry_postgresql.sql
+```
+
+Ifyou chose to use MSSQL, you must set your database credentials:
+
+```php
+$MsSql_server = 'DB_HOSTNAME';
+$MsSql_databasename = 'DB_NAME';
+$MsSql_WindowsAuthentication = true;   #true or false
+$MsSql_username = 'USERNAME';          #not used if MsSql_WindowsAuthentication is true
+$MsSql_password = 'PASSWORD';          #not used if MsSql_WindowsAuthentication is true
+$MsSql_TrustServerCertificate = true;  #true, false or comment out for driver default
 ```
 
 ##### Results sharing
@@ -158,8 +171,10 @@ Requirements:
   * MySQL/MariaDB and its PHP PDO module
   * PostgreSQL and its PHP PDO module
   * SQLite 3 and its PHP PDO module
-* If you want to enable results sharing:
-  * FreeType 2 and its PHP module (this is usually installed automatically by most distros)
+  * MSSQL and its PHP PDO module (Windows only)
+* If you want to enable results sharing (these are usually installed automatically by most distros when you install PHP):
+  * FreeType 2 and its PHP module
+  * The PHP gd library
 
 To install the speed test frontend, copy the following files to your web server:
 
