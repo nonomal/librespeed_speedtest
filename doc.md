@@ -110,10 +110,10 @@ Ifyou chose to use MSSQL, you must set your database credentials:
 ```php
 $MsSql_server = 'DB_HOSTNAME';
 $MsSql_databasename = 'DB_NAME';
-$MsSql_WindowsAuthentication = true;   #true or false
-$MsSql_username = 'USERNAME';          #not used if MsSql_WindowsAuthentication is true
-$MsSql_password = 'PASSWORD';          #not used if MsSql_WindowsAuthentication is true
-$MsSql_TrustServerCertificate = true;  #true, false or comment out for driver default
+$MsSql_WindowsAuthentication = true;   //true or false
+$MsSql_username = 'USERNAME';          //not used if MsSql_WindowsAuthentication is true
+$MsSql_password = 'PASSWORD';          //not used if MsSql_WindowsAuthentication is true
+$MsSql_TrustServerCertificate = true;  //true, false or comment out for driver default
 ```
 
 ##### Results sharing
