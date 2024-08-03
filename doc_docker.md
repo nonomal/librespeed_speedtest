@@ -143,7 +143,7 @@ In frontend mode, LibreSpeed serves clients the Web UI and a list of servers. To
 
 The test can be accessed on port 80.
 
-The list of environment variables available in this mode is the same as [above in standard mode](#standalone-mode).
+The list of environment variables available in this mode is the same as [above in standalone mode](#standalone-mode).
 
 #### Example Frontend mode
 
