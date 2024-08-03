@@ -47,9 +47,9 @@ Assuming you have PHP and a web server installed, the installation steps are qui
 
 ### Installation Video
 
-There is a more in-depth installation video here:
+This video shows the installation process of a standalone LibreSpeed server: [Quick start installation guide for Debian 12](https://fdossena.com/?p=speedtest/quickstart_deb12.frag)
 
-* [Quick start installation guide for Ubuntu Server 19.04](https://fdossena.com/?p=speedtest/quickstart_v5_ubuntu.frag)
+More videos will be added later.
 
 ## Android app
 

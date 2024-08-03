@@ -34,11 +34,9 @@ Client side, the test can use up to 500MB of RAM on very fast connections.
 
 ## Quick start guides
 
-These guides cover a simple single server installation of the speed test.
+This video shows the installation process of a standalone LibreSpeed server: [Quick start installation guide for Debian 12](https://fdossena.com/?p=speedtest/quickstart_deb12.frag)
 
-* [Quick start installation guide for Ubuntu Server 19.04](https://fdossena.com/?p=speedtest/quickstart_v5_ubuntu.frag)
-
-More guides will be added later
+More videos will be added later.
 
 ## Installation
 
