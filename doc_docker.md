@@ -1,18 +1,23 @@
+# Using the docker image
+
 A docker version of LibreSpeed is available here: [GitHub Packages](https://github.com/librespeed/speedtest/pkgs/container/speedtest)
 
-## Downloading docker image
+## Quickstart
 
-To download LibreSpeed from the docker repo, use this command:
+If you just want to try it, the fastest way is:
 
+```shell
+docker run -p 80:80 -d --name speedtest --rm ghcr.io/librespeed/speedtest
 ```
-docker pull ghcr.io/librespeed/speedtest
-```
 
-You will now have a new docker image called `ghcr.io/librespeed/speedtest`.
+Then go with your browser to port 80 of your server and try it out. If port 80 is already in use, adjust the first number in 80:80 above.
+Default is to run in standalone mode.
 
 ## Docker Compose
 
-To start the container using [docker compose](https://docs.docker.com/compose/) the following configuration can be used:
+In production environments we would recommend using docker-compose.
+
+To start the container using [docker compose](https://docs.docker.com/compose/) the following `docker-compose.yml` configuration can be used:
 
 ```yml
 version: '3.7'
@@ -30,6 +35,7 @@ services:
       #PASSWORD:
       #EMAIL:
       #DISABLE_IPINFO: "false"
+      #IPINFO_APIKEY: "your api key"
       #DISTANCE: "km"
       #WEBPORT: 80
     ports:
@@ -50,12 +56,20 @@ Here's a list of additional environment variables available in this mode:
 * __`TELEMETRY`__: Whether to enable telemetry or not. If enabled, you maybe want your data to be persisted. See below. Default value: `false`
 * __`ENABLE_ID_OBFUSCATION`__: When set to true with telemetry enabled, test IDs are obfuscated, to avoid exposing the database internal sequential IDs. Default value: `false`
 * __`REDACT_IP_ADDRESSES`__: When set to true with telemetry enabled, IP addresses and hostnames are redacted from the collected telemetry, for better privacy. Default value: `false`
+* __`DB_TYPE`__: When set to one of the supported DB-Backends it will use this instead of the default sqlite database backend. TELEMETRY has to be set to `true`. Also you have to create the database as described in [doc.md](doc.md#creating-the-database). Supported backend types are:
+  * sqlite - no additional settings required
+  * mysql, postgresql - set additional env-variables:
+    * DB_HOSTNAME - Name or IP of the DB server
+    * DB_PORT (mysql only) - Port where DB is running
+    * DB_NAME - Name of the telemetry db
+    * DB_USERNAME, DB_PASSWORD - credentials of the user with read and update permissions to the db
+  * mssql - not supported in docker image yet (feel free to open a PR with that, has to be done in `entrypoint.sh`)
 * __`PASSWORD`__: Password to access the stats page. If not set, stats page will not allow accesses.
 * __`EMAIL`__: Email address for GDPR requests. Must be specified when telemetry is enabled.
-* __`DISABLE_IPINFO`__: If set to true, ISP info and distance will not be fetched from either ipinfo.io or the offline database. Default: value: `false`
-* __`IPINFO_APIKEY`__: API key for ipinfo.io. Optional, but required if you want to use the full ipinfo.io APIs (required for distance measurement)
-* __`DISTANCE`__: When `DISABLE_IPINFO` is set to false, this specifies how the distance from the server is measured. Can be either `km` for kilometers, `mi` for miles, or an empty string to disable distance measurement. Requires an ipinfo.io API key. Default value: `km`
-* __`WEBPORT`__: Allows choosing a custom port for the included web server. Default value: `80`. Note that you will have to expose it through docker with the -p argument
+* __`DISABLE_IPINFO`__: If set to `true`, ISP info and distance will not be fetched from either [ipinfo.io](https://ipinfo.io) or the offline database. Default: value: `false`
+* __`IPINFO_APIKEY`__: API key for [ipinfo.io](https://ipinfo.io). Optional, but required if you want to use the full [ipinfo.io](https://ipinfo.io) APIs (required for distance measurement)
+* __`DISTANCE`__: When `DISABLE_IPINFO` is set to false, this specifies how the distance from the server is measured. Can be either `km` for kilometers, `mi` for miles, or an empty string to disable distance measurement. Requires an [ipinfo.io](https://ipinfo.io) API key. Default value: `km`
+* __`WEBPORT`__: Allows choosing a custom port for the included web server. Default value: `80`. Note that you will have to expose it through docker with the -p argument. This is not the port where the service is exposed outside docker!
 
 If telemetry is enabled, a stats page will be available at `http://your.server/results/stats.php`, but a password must be specified.
 
@@ -65,17 +79,11 @@ Default DB driver is sqlite. The DB file is written to `/database/db.sql`.
 
 So if you want your data to be persisted over image updates, you have to mount a volume with `-v $PWD/db-dir:/database`.
 
-###### Example
+#### Example Standalone Mode with telemetry
 
-This command starts LibreSpeed in standalone mode, with the default settings, on port 80:
+This command starts LibreSpeed in standalone mode, with persisted telemetry, ID obfuscation and a stats password, on port 86:
 
-```bash
-docker run -e MODE=standalone -p 80:80 -it ghcr.io/librespeed/speedtest
-```
-
-This command starts LibreSpeed in standalone mode, with telemetry, ID obfuscation and a stats password, on port 86:
-
-```bash
+```shell
 docker run -e MODE=standalone -e TELEMETRY=true -e ENABLE_ID_OBFUSCATION=true -e PASSWORD="yourPasswordHere" -e WEBPORT=86 -p 86:86 -v $PWD/db-dir/:/database -it ghcr.io/librespeed/speedtest
 ```
 
@@ -91,13 +99,13 @@ The following backend files can be accessed on port 80: `garbage.php`, `empty.ph
 
 Here's a list of additional environment variables available in this mode:
 
-* __`IPINFO_APIKEY`__: API key for ipinfo.io. Optional, but required if you want to use the full ipinfo.io APIs (required for distance measurement). If no API key is provided, the offline database will be used instead.
+* __`IPINFO_APIKEY`__: API key for [ipinfo.io](https://ipinfo.io). Optional, but required if you want to use the full [ipinfo.io](https://ipinfo.io) APIs (required for distance measurement). If no API key is provided, the offline database will be used instead.
 
-###### Example
+#### Example Backend mode
 
 This command starts LibreSpeed in backend mode, with the default settings, on port 80:
 
-```bash
+```shell
 docker run -e MODE=backend -p 80:80 -it ghcr.io/librespeed/speedtest
 ```
 
@@ -108,7 +116,7 @@ In frontend mode, LibreSpeed serves clients the Web UI and a list of servers. To
 * Set the `MODE` environment variable to `frontend`
 * Create a servers.json file with your test points. The syntax is the following:
 
-    ```json
+    ```jsonc
     [
         {
             "name": "Friendly name for Server 1",
@@ -126,7 +134,7 @@ In frontend mode, LibreSpeed serves clients the Web UI and a list of servers. To
             "pingURL" :"empty.php",
             "getIpURL" :"getIP.php"
         },
-        ...more servers...
+        //...more servers...
     ]
     ```
 
@@ -135,24 +143,14 @@ In frontend mode, LibreSpeed serves clients the Web UI and a list of servers. To
 
 The test can be accessed on port 80.
 
-Here's a list of additional environment variables available in this mode:
+The list of environment variables available in this mode is the same as [above in standard mode](#standalone-mode).
 
-* __`TITLE`__: Title of your speedtest. Default value: `LibreSpeed`
-* __`TELEMETRY`__: Whether to enable telemetry or not. Default value: `false`
-* __`ENABLE_ID_OBFUSCATION`__: When set to true with telemetry enabled, test IDs are obfuscated, to avoid exposing the database internal sequential IDs. Default value: `false`
-* __`REDACT_IP_ADDRESSES`__: When set to true with telemetry enabled, IP addresses and hostnames are redacted from the collected telemetry, for better privacy. Default value: `false`
-* __`PASSWORD`__: Password to access the stats page. If not set, stats page will not allow accesses.
-* __`EMAIL`__: Email address for GDPR requests. Must be specified when telemetry is enabled.
-* __`DISABLE_IPINFO`__: If set to true, ISP info and distance will not be fetched from the backend server. Default: value: `false`
-* __`DISTANCE`__: When `DISABLE_IPINFO` is set to false, this specifies how the distance from the server is measured. Can be either `km` for kilometers, `mi` for miles, or an empty string to disable distance measurement. Requires an ipinfo.io API Key on the backend server. Default value: `km`
-* __`WEBPORT`__: Allows choosing a custom port for the included web server. Default value: `80`
+#### Example Frontend mode
 
-###### Example
+This command starts LibreSpeed in frontend mode, with a given `servers.json` file, and with telemetry, ID obfuscation, and a stats password and a persistant sqlite database for results:
 
-This command starts LibreSpeed in frontend mode, with a given `servers.json` file, and with telemetry, ID obfuscation, and a stats password:
-
-```bash
-docker run -e MODE=frontend -e TELEMETRY=true -e ENABLE_ID_OBFUSCATION=true -e PASSWORD="yourPasswordHere" -v $(pwd)/servers.json:/servers.json -p 80:80 -it ghcr.io/librespeed/speedtest
+```shell
+docker run -e MODE=frontend -e TELEMETRY=true -e ENABLE_ID_OBFUSCATION=true -e PASSWORD="yourPasswordHere" -v $PWD/servers.json:/servers.json -v $PWD/db-dir/:/database -p 80:80 -it ghcr.io/librespeed/speedtest
 ```
 
 ### Dual mode

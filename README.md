@@ -40,10 +40,10 @@ Works with mobile versions too.
 Assuming you have PHP and a web server installed, the installation steps are quite simple.
 
 1. Download the source code and extract it
-2. Copy the following files to your web server's shared folder (ie. /var/www/html/speedtest for Apache): index.html, speedtest.js, speedtest_worker.js, favicon.ico and the backend folder
-4. Optionally, copy the results folder too, and set up the database using the config file in it.
-5. Be sure your permissions allow execute (755).
-6. Visit YOURSITE/speedtest/index.html and voila!
+1. Copy the following files to your web server's shared folder (ie. /var/www/html/speedtest for Apache): index.html, speedtest.js, speedtest_worker.js, favicon.ico and the backend folder
+1. Optionally, copy the results folder too, and set up the database using the config file in it.
+1. Be sure your permissions allow execute (755).
+1. Visit YOURSITE/speedtest/index.html and voila!
 
 ### Installation Video
 
@@ -62,6 +62,7 @@ A command line client is available [here](https://github.com/librespeed/speedtes
 ## Docker
 
 A docker image is available on [GitHub](https://github.com/librespeed/speedtest/pkgs/container/speedtest), check our [docker documentation](doc_docker.md) for more info about it.
+The image is built every week to include an updated version of the ipinfo-DB used for ISP detection. Also this ensures, that the latest security patches in PHP are installed. Therefore we recommend to use the `latest` image.
 
 ## Go backend
 

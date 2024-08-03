@@ -243,7 +243,7 @@ The URL doesn't need to be complete, it can just point to a file in the current 
 
 __Important:__ The same origin policy applies to which URLs you can and cannot load with this method. If possible, it's best to just point it to a file on the current server.
 
-##### Telemetry and results sharing
+##### Telemetry and results sharing in multiple server scenarios
 
 Telemetry is stored on the frontend server. The setup procedure is the same as the single server version.
 
@@ -261,11 +261,9 @@ To install a backend, simply copy all the files in the `backend` folder to your 
 
 __Important:__ The speed test needs write permissions in the installation folder!
 
-#### ipinfo.io
+#### ipinfo.io, see single server
 
-The speed test uses [ipinfo.io](https://ipinfo.io) to detect ISP and distance from server. This is completely optional and can be disabled if you want (see speed test settings), but it is enabled by default, and if you expect more than ~500 tests per day, you will need to sign up to [ipinfo.io](https://ipinfo.io) and edit `getIP_ipInfo_apikey.php` to set your access token.
-
-IpInfo.io has kindly offered free access to their APIs for users of this project; if you're interested, contact me at [info@fdossena.com](mailto:info@fdossena.com) and provide a description of what you intend to do with the project, and you'll get the API key.
+see [above](#ipinfoio)
 
 ## Making a custom front-end
 
@@ -398,12 +396,12 @@ __Main parameters:__
 * __url_telemetry__: path to telemetry.php or replacement
   * Default: `results/telemetry.php`
   * __Important:__ path is relative to js file
- 	* __Note:__ you can ignore this parameter if you're not using the telemetry
+  * __Note:__ you can ignore this parameter if you're not using the telemetry
 * __telemetry_level__: The type of telemetry to use. See the telemetry section for more info about this
- 	* Default: `none`
- 	* `basic`: send results only
- 	* `full`: send results and timing information, even for aborted tests
- 	* `debug`: same as full but also sends debug information. Not recommended.
+  * Default: `none`
+  * `basic`: send results only
+  * `full`: send results and timing information, even for aborted tests
+  * `debug`: same as full but also sends debug information. Not recommended.
 * __test_order__: the order in which tests will be performed. You can use this to change the order of the test, or to only enable specific tests. Each character represents an operation:
   * `I`: get IP
   * `D`: download test
@@ -439,9 +437,9 @@ __Advanced parameters:__ (Seriously, don't change these unless you know what you
   * Default: `3`
   * Recommended: `>=1`
 * __xhr_ul_blob_megabytes__: size in megabytes of the blobs sent during the upload test
- 	* Default: `20`
- 	* Default override: 4 on Chromium-based mobile browsers (limitation introduced around version 65). This will be forced
- 	* Default override: IE11 and Edge currently use a different method for the upload test. This parameter is ignored
+  * Default: `20`
+  * Default override: 4 on Chromium-based mobile browsers (limitation introduced around version 65). This will be forced
+  * Default override: IE11 and Edge currently use a different method for the upload test. This parameter is ignored
 * __xhr_multistreamDelay__: how long should the multiple streams be delayed (in ms)
   * Default: `300`
   * Recommended: `>=100`, `<=700`
@@ -458,16 +456,16 @@ __Advanced parameters:__ (Seriously, don't change these unless you know what you
   * Default: `3`
   * Recommended: `>=1`
 * __ping_allowPerformanceApi__: toggles use of Performance API to improve accuracy of Ping/Jitter test on browsers that support it.
- 	* Default: `true`
- 	* Default override: `false` on Firefox because its performance API implementation is inaccurate
+  * Default: `true`
+  * Default override: `false` on Firefox because its performance API implementation is inaccurate
 * __useMebibits__: use mebibits/s instead of megabits/s for the speeds
- 	* Default: `false`
+  * Default: `false`
 * __overheadCompensationFactor__: compensation for HTTP and network overhead. Default value assumes typical MTUs used over the Internet. You might want to change this if you're using this in your internal network with different MTUs, or if you're using IPv6 instead of IPv4.
   * Default: `1.06` probably a decent estimate for all overhead. This was measured empirically by comparing the measured speed and the speed reported by my the network adapter.
   * `1048576/925000`: old default value. This is probably too high.
- 	* `1.0513`: HTTP+TCP+IPv6+ETH, over the Internet (empirically tested, not calculated)
+  * `1.0513`: HTTP+TCP+IPv6+ETH, over the Internet (empirically tested, not calculated)
   * `1.0369`: Alternative value for HTTP+TCP+IPv4+ETH, over the Internet (empirically tested, not calculated)
- 	* `1.081`: Yet another alternative value for over the Internet (empirically tested, not calculated)
+  * `1.081`: Yet another alternative value for over the Internet (empirically tested, not calculated)
   * `1514 / 1460`: TCP+IPv4+ETH, ignoring HTTP overhead
   * `1514 / 1440`: TCP+IPv6+ETH, ignoring HTTP overhead
   * `1`: ignore overheads. This measures the speed at which you actually download and upload files rather than the raw connection speed
@@ -564,14 +562,14 @@ You can think of this as a finite state machine. These are the states (use getSt
 * __1__: here you can add test points. You only need to do this if you want to use multiple test points.
     A server is defined as an object like this:
 
-    ```
+    ```jsonc
     {
         name: "User friendly name",
-        server:"http://yourBackend.com/",     <---- URL to your server. You can specify http:// or https://. If your server supports both, just write // without the protocol
-        dlURL:"garbage.php"    <----- path to garbage.php or its replacement on the server
-        ulURL:"empty.php"    <----- path to empty.php or its replacement on the server
-        pingURL:"empty.php"    <----- path to empty.php or its replacement on the server. This is used to ping the server by this selector
-        getIpURL:"getIP.php"    <----- path to getIP.php or its replacement on the server
+        server:"http://yourBackend.com/",   //  <---- URL to your server. You can specify http:// or https://. If your server supports both, just write // without the protocol
+        dlURL:"garbage.php" //   <----- path to garbage.php or its replacement on the server
+        ulURL:"empty.php"  //  <----- path to empty.php or its replacement on the server
+        pingURL:"empty.php"  //  <----- path to empty.php or its replacement on the server. This is used to ping the server by this selector
+        getIpURL:"getIP.php"  //  <----- path to getIP.php or its replacement on the server
     }
     ```
 
@@ -601,6 +599,7 @@ Returns the state of the test: 0=adding settings, 1=adding servers, 2=server sel
 ##### setParameter(parameter,value)
 
 Change one of the test settings from their defaults.
+
 * parameter: string with the name of the parameter that you want to set
 * value: new value for the parameter
 
@@ -609,16 +608,17 @@ Invalid values or nonexistant parameters will be ignored by the speed test worke
 ##### addTestPoint(server)
 
 Add a test point (multiple points of test)
+
 * server: the server to be added as an object. Must contain the following elements:
 
-    ```
+    ```jsonc
     {
         name: "User friendly name",
-        server:"http://yourBackend.com/",   URL to your server. You can specify http:// or https://. If your server supports both, just write // without the protocol
-        dlURL:"garbage.php"   path to garbage.php or its replacement on the server
-        ulURL:"empty.php"   path to empty.php or its replacement on the server
-        pingURL:"empty.php"   path to empty.php or its replacement on the server. This is used to ping the server by this selector
-        getIpURL:"getIP.php"   path to getIP.php or its replacement on the server
+        server:"http://yourBackend.com/",   // URL to your server. You can specify http:// or https://. If your server supports both, just write // without the protocol
+        dlURL:"garbage.php", //  path to garbage.php or its replacement on the server
+        ulURL:"empty.php", //   path to empty.php or its replacement on the server
+        pingURL:"empty.php", //   path to empty.php or its replacement on the server. This is used to ping the server by this selector
+        getIpURL:"getIP.php", //   path to getIP.php or its replacement on the server
     }
     ```
 
@@ -751,7 +751,7 @@ Note: if your server is behind some proxy, firewall, VPN, etc., the client's IP 
 
 All these files will send the following CORS headers if the GET parameter `cors=true` is passed to them:
 
-```
+```header
 Access-Control-Allow-Origin: *
 Access-Control-Allow-Methods: GET, POST
 Access-Control-Allow-Headers: Content-Encoding, Content-Type
@@ -810,7 +810,7 @@ s.setParameter("url_ping","URL to your empty.php replacement");
 s.setParameter("url_getIp","URL to your getIP.php replacement");
 ```
 
-#### Replacement for `garbage.php`
+### Replacement for `garbage.php`
 
 A replacement for `garbage.php` must generate incompressible garbage data.
 
@@ -860,7 +860,7 @@ This will point to our static files and set the test to only do ping/jitter, dow
 
 These are the most common issues reported by users, and how to fix them. If you still need help, contact me at [info@fdossena.com](mailto:info@fdossena.com).
 
-#### Download test gives very low result
+### Download test gives very low result
 
 Are garbage.php and empty.php (or your replacements) reachable?
 Press F12, select network and start the test. Do you see errors? (cancelled requests are not errors)
@@ -874,7 +874,7 @@ Check your server's maximum POST size, make sure it's at least 20Mbytes, possibl
 
 The test was fine tuned to run over a typical IPv4 internet connection. If you're using it under different conditions, see the `overheadCompensationFactor` parameter.
 
-#### All tests are wrong, give extremely high results, browser lags/crashes,
+#### All tests are wrong, give extremely high results, browser lags/crashes
 
 You're running the test on localhost, therefore it is trying to measure the speed of your loopback interface. The test is meant to be run over an Internet connection, from a different machine.
 
