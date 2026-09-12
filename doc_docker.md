@@ -2,15 +2,19 @@
 
 A docker version of LibreSpeed is available here: [GitHub Packages](https://github.com/librespeed/speedtest/pkgs/container/speedtest)
 
+# Alpine Linux variant
+
+An Alpine Linux based docker version of LibreSpeed is also available here: [GitHub Packages](https://github.com/librespeed/speedtest/pkgs/container/speedtest) under all the tags that have the `-alpine` suffix. This variant is significantly smaller but can have slightly different behaviour due to its toolchain being based in [musl](https://en.wikipedia.org/wiki/Musl) libc as mentioned in [here](https://alpinelinux.org/about/).
+
 ## Quickstart
 
 If you just want to try it, the fastest way is:
 
 ```shell
-docker run -p 80:80 -d --name speedtest --rm ghcr.io/librespeed/speedtest
+docker run -p 80:8080 -d --name speedtest --rm ghcr.io/librespeed/speedtest
 ```
 
-Then go with your browser to port 80 of your server and try it out. If port 80 is already in use, adjust the first number in 80:80 above.
+Then go with your browser to port 80 of your server and try it out. If port 80 is already in use, adjust the first number in 80:8080 above.
 Default is to run in standalone mode.
 
 ## Docker Compose
@@ -29,17 +33,18 @@ services:
     environment:
       MODE: standalone
       #TITLE: "LibreSpeed"
+      #TAGLINE: "No Flash, No Java, No Websockets, No Bullsh*t"
       #TELEMETRY: "false"
       #ENABLE_ID_OBFUSCATION: "false"
       #REDACT_IP_ADDRESSES: "false"
       #PASSWORD:
-      #EMAIL:
+      #GDPR_EMAIL: "privacy@example.com"
       #DISABLE_IPINFO: "false"
       #IPINFO_APIKEY: "your api key"
       #DISTANCE: "km"
-      #WEBPORT: 80
+      #WEBPORT: 8080
     ports:
-      - "80:80" # webport mapping (host:container)
+      - "80:8080" # webport mapping (host:container)
 ```
 
 Please adjust the environment variables according to the intended operating mode.
@@ -53,8 +58,12 @@ The test can be accessed on port 80.
 Here's a list of additional environment variables available in this mode:
 
 * __`TITLE`__: Title of your speed test. Default value: `LibreSpeed`
+* __`TAGLINE`__: Slogan shown below the heading on the modern frontend (`index-modern.html`). Default value: `No Flash, No Java, No Websockets, No Bullsh*t`
+* __`USE_NEW_DESIGN`__: When set to `true`, enables the new modern frontend design. When set to `false` (default), uses the classic design. The design can also be switched using URL parameters (`?design=new` or `?design=old`). Default value: `false`
+* __`SERVER_LIST_URL`__: When set, both frontend designs load their server list from this URL instead of the generated or mounted `server-list.json`. This is useful if you want the containerized frontend to consume a remote shared server list.
 * __`TELEMETRY`__: Whether to enable telemetry or not. If enabled, you maybe want your data to be persisted. See below. Default value: `false`
 * __`ENABLE_ID_OBFUSCATION`__: When set to true with telemetry enabled, test IDs are obfuscated, to avoid exposing the database internal sequential IDs. Default value: `false`
+* __`OBFUSCATION_SALT`__: The salt string that is used to obfuscate the test IDs. The format should be a 2 byte hex string (e.g. `0x1234abcd`). If not specified, a random one will be generated.
 * __`REDACT_IP_ADDRESSES`__: When set to true with telemetry enabled, IP addresses and hostnames are redacted from the collected telemetry, for better privacy. Default value: `false`
 * __`DB_TYPE`__: When set to one of the supported DB-Backends it will use this instead of the default sqlite database backend. TELEMETRY has to be set to `true`. Also you have to create the database as described in [doc.md](doc.md#creating-the-database). Supported backend types are:
   * sqlite - no additional settings required
@@ -65,11 +74,11 @@ Here's a list of additional environment variables available in this mode:
     * DB_USERNAME, DB_PASSWORD - credentials of the user with read and update permissions to the db
   * mssql - not supported in docker image yet (feel free to open a PR with that, has to be done in `entrypoint.sh`)
 * __`PASSWORD`__: Password to access the stats page. If not set, stats page will not allow accesses.
-* __`EMAIL`__: Email address for GDPR requests. Must be specified when telemetry is enabled.
+* __`GDPR_EMAIL`__: Email address displayed in the privacy policy for data deletion requests. If not set, the default placeholder text will be shown. This should be set to comply with GDPR requirements when running in production. Must be specified when telemetry is enabled. Note: the old `EMAIL` environment variable is still accepted as a fallback but is deprecated — please migrate to `GDPR_EMAIL`.
 * __`DISABLE_IPINFO`__: If set to `true`, ISP info and distance will not be fetched from either [ipinfo.io](https://ipinfo.io) or the offline database. Default: value: `false`
 * __`IPINFO_APIKEY`__: API key for [ipinfo.io](https://ipinfo.io). Optional, but required if you want to use the full [ipinfo.io](https://ipinfo.io) APIs (required for distance measurement)
 * __`DISTANCE`__: When `DISABLE_IPINFO` is set to false, this specifies how the distance from the server is measured. Can be either `km` for kilometers, `mi` for miles, or an empty string to disable distance measurement. Requires an [ipinfo.io](https://ipinfo.io) API key. Default value: `km`
-* __`WEBPORT`__: Allows choosing a custom port for the included web server. Default value: `80`. Note that you will have to expose it through docker with the -p argument. This is not the port where the service is exposed outside docker!
+* __`WEBPORT`__: Allows choosing a custom port for the included web server. Default value: `8080`. Note that you will have to expose it through docker with the -p argument. This is not the port where the service is exposed outside docker!
 
 If telemetry is enabled, a stats page will be available at `http://your.server/results/stats.php`, but a password must be specified.
 
@@ -106,7 +115,7 @@ Here's a list of additional environment variables available in this mode:
 This command starts LibreSpeed in backend mode, with the default settings, on port 80:
 
 ```shell
-docker run -e MODE=backend -p 80:80 -it ghcr.io/librespeed/speedtest
+docker run -e MODE=backend -p 80:8080 -it ghcr.io/librespeed/speedtest
 ```
 
 ### Frontend mode
@@ -145,12 +154,18 @@ The test can be accessed on port 80.
 
 The list of environment variables available in this mode is the same as [above in standalone mode](#standalone-mode).
 
+If you want the Docker frontend to load its server list from another URL instead of `/servers.json`, set `SERVER_LIST_URL`:
+
+```shell
+docker run -e MODE=frontend -e SERVER_LIST_URL="https://example.com/custom-server-list.json" -p 80:8080 -it ghcr.io/librespeed/speedtest
+```
+
 #### Example Frontend mode
 
 This command starts LibreSpeed in frontend mode, with a given `servers.json` file, and with telemetry, ID obfuscation, and a stats password and a persistant sqlite database for results:
 
 ```shell
-docker run -e MODE=frontend -e TELEMETRY=true -e ENABLE_ID_OBFUSCATION=true -e PASSWORD="yourPasswordHere" -v $PWD/servers.json:/servers.json -v $PWD/db-dir/:/database -p 80:80 -it ghcr.io/librespeed/speedtest
+docker run -e MODE=frontend -e TELEMETRY=true -e ENABLE_ID_OBFUSCATION=true -e PASSWORD="yourPasswordHere" -v $PWD/servers.json:/servers.json -v $PWD/db-dir/:/database -p 80:8080 -it ghcr.io/librespeed/speedtest
 ```
 
 ### Dual mode

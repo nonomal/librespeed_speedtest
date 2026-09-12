@@ -1,7 +1,7 @@
 # LibreSpeed
 
 > by Federico Dossena
-> Version 5.4.1
+> Version 6.3.0
 > [https://github.com/librespeed/speedtest/](https://github.com/librespeed/speedtest/)
 
 ## Introduction
@@ -60,6 +60,29 @@ Let's install the speed test.
 
 Put all files on your web server via FTP or by copying them directly. You can install it in the root, or in a subdirectory.
 
+**Web server upload limit:** The upload test sends POST requests up to 20 MB (configurable with `xhr_ul_blob_megabytes`). Without proper configuration, the server will reject these with HTTP 413, causing wildly inaccurate upload speeds. Configure your web server to accept large request bodies:
+
+Nginx:
+```
+client_max_body_size 128m;
+```
+
+Apache:
+```
+LimitRequestBody 134217728
+```
+
+IIS: Add the following to `web.config` (value is in bytes):
+```xml
+<system.webServer>
+  <security>
+    <requestFiltering>
+      <requestLimits maxAllowedContentLength="134217728" />
+    </requestFiltering>
+  </security>
+</system.webServer>
+```
+
 __Important:__ The speed test needs write permissions in the installation folder!
 
 #### ipinfo.io
@@ -103,7 +126,7 @@ $PostgreSql_hostname="DB_HOSTNAME"; //database address, usually localhost
 $PostgreSql_databasename="DB_NAME"; //the name of the database where you loaded telemetry_postgresql.sql
 ```
 
-Ifyou chose to use MSSQL, you must set your database credentials:
+If you chose to use MSSQL, you must set your database credentials:
 
 ```php
 $MsSql_server = 'DB_HOSTNAME';
@@ -174,18 +197,27 @@ Requirements:
   * FreeType 2 and its PHP module
   * The PHP gd library
 
-To install the speed test frontend, copy the following files to your web server:
+To install the speed test frontend, copy the project files to your web server, keeping the layout they have in the repository:
 
+* `index.html`
+* `index-classic.html`
+* `index-modern.html`
+* `design-switch.js`
+* `config.json`
+* `settings.json`
+* `server-list.json`
 * `speedtest.js`
 * `speedtest_worker.js`
+* `favicon.ico`
+* the `backend` folder
+* the `frontend` folder, copied as a whole: the modern UI loads its assets from `frontend/`
 * Optionally, the `results` folder
-* `index.html` (or one of the example UIs in the `examples` folder)
 
-__Important:__ The speed test needs write permissions in the installation folder!
+__Important:__ The speed test needs read and execute permissions in the installation folder where applicable!
 
 ##### Server list
 
-Edit `index.html` and uncomment the list of servers:
+Edit `index-classic.html` and uncomment the list of servers:
 
 ```js
 var SPEEDTEST_SERVERS=[
@@ -461,7 +493,7 @@ __Advanced parameters:__ (Seriously, don't change these unless you know what you
 * __useMebibits__: use mebibits/s instead of megabits/s for the speeds
   * Default: `false`
 * __overheadCompensationFactor__: compensation for HTTP and network overhead. Default value assumes typical MTUs used over the Internet. You might want to change this if you're using this in your internal network with different MTUs, or if you're using IPv6 instead of IPv4.
-  * Default: `1.06` probably a decent estimate for all overhead. This was measured empirically by comparing the measured speed and the speed reported by my the network adapter.
+  * Default: `1.06` probably a decent estimate for all overhead. This was measured empirically by comparing the measured speed and the speed reported by my network adapter.
   * `1048576/925000`: old default value. This is probably too high.
   * `1.0513`: HTTP+TCP+IPv6+ETH, over the Internet (empirically tested, not calculated)
   * `1.0369`: Alternative value for HTTP+TCP+IPv4+ETH, over the Internet (empirically tested, not calculated)
@@ -700,7 +732,7 @@ To keep track of the amount of transferred data, the XHR Level 2 `upload.onprogr
 
 This test has a couple of complications:
 
-* Some browsers don't have a working `upload.onprogress` event. For this, we use a small blobs instead of a large one and we keep track of progress using the `onload` event. This is referred to as IE11 Workaround (but the same bug was also found in some versions of Edge and Safari)
+* Some browsers don't have a working `upload.onprogress` event. For this, we use a small blobs instead of a large one and we keep track of progress using the `onload` event. This is referred to as IE11 Workaround. Browsers that expose no usable `xhr.upload` object, such as IE11, select it automatically through feature detection. Some versions of Edge and the PlayStation 4 browser do have an `xhr.upload` object whose events never fire, which feature detection cannot see, so those two are still matched by user agent. Safari is __not__ affected and uses the regular, more accurate upload test
 * When `mpot` is set to `true`, an empty request must first be sent in order to load the CORS headers before the test can start
 
 See the code for more implementation details.
